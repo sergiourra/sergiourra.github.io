@@ -1,7 +1,406 @@
-<html>
-  <title>Sergio en Github</title>
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Sergio</title>
+    <meta name="description" content="Sergio: ingeniero civil mecánico, músico, datos y ML." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..900&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* Blueprint pad: pale blue paper, navy ink, cobalt pencil */
+      :root {
+        --paper: #e8eef6;
+        --grid: #c3d3e6;
+        --ink: #13243d;
+        --graphite: #566a86;
+        --accent: #1f56d6;
+        color-scheme: light;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root:not([data-theme="light"]) {
+          --paper: #0d1828;
+          --grid: #1d3150;
+          --ink: #dde8f6;
+          --graphite: #8aa0bf;
+          --accent: #6b9dff;
+          color-scheme: dark;
+        }
+      }
+      :root[data-theme="dark"] {
+        --paper: #0d1828;
+        --grid: #1d3150;
+        --ink: #dde8f6;
+        --graphite: #8aa0bf;
+        --accent: #6b9dff;
+        color-scheme: dark;
+      }
+
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+
+      body {
+        min-height: 100vh;
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+        background: var(--paper);
+        color: var(--ink);
+        font-family: "Archivo", system-ui, sans-serif;
+        font-variation-settings: "wdth" 100;
+        line-height: 1.5;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      .wrap {
+        width: 100%;
+        max-width: 72rem;
+        margin: 0 auto;
+        padding: 0 clamp(1rem, 4vw, 2.5rem);
+      }
+
+      header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 1.5rem;
+        padding-bottom: 1.5rem;
+      }
+      .home {
+        color: var(--graphite);
+        font-size: 0.875rem;
+        text-decoration: none;
+      }
+
+      .lang { display: flex; gap: 0.25rem; font-size: 0.875rem; }
+      .lang button {
+        appearance: none;
+        border: 0;
+        background: none;
+        color: var(--graphite);
+        font: inherit;
+        padding: 0.25rem 0.5rem;
+        cursor: pointer;
+        border-bottom: 2px solid transparent;
+      }
+      .lang button[aria-pressed="true"] {
+        color: var(--ink);
+        border-bottom-color: var(--accent);
+      }
+
+      main {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding-top: clamp(1rem, 4vh, 3rem);
+        padding-bottom: clamp(1.5rem, 5vh, 4rem);
+      }
+
+      h1 {
+        font-size: clamp(3.5rem, min(23vw, 22vh), 13rem);
+        font-weight: 850;
+        font-variation-settings: "wdth" 125;
+        letter-spacing: -0.035em;
+        line-height: 0.85;
+        margin-left: -0.04em;
+      }
+
+      /* One physics, two purposes: time trace on top, spectrum below */
+      .pair {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        column-gap: clamp(1rem, 4vw, 3rem);
+        align-items: end;
+      }
+      .line {
+        font-size: clamp(1.15rem, 3.2vw, 2.1rem);
+        font-weight: 400;
+        font-variation-settings: "wdth" 75;
+        line-height: 1.15;
+      }
+      .tagline { margin-top: clamp(2.25rem, 6vh, 3.5rem); align-items: start; }
+      .tagline .line:first-child { color: var(--graphite); }
+
+      .signal {
+        position: relative;
+        margin: 1.25rem calc(-1 * clamp(1rem, 4vw, 2.5rem)) 0;
+        height: clamp(15rem, min(30vw, 36vh), 22rem);
+      }
+      .signal::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-image:
+          linear-gradient(var(--grid) 1px, transparent 1px),
+          linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+        background-size: 20px 20px;
+        -webkit-mask-image: linear-gradient(180deg, #000 55%, transparent 100%);
+        mask-image: linear-gradient(180deg, #000 55%, transparent 100%);
+        opacity: 0.8;
+      }
+      .signal svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+      .trace {
+        fill: none;
+        stroke: url(#ink-to-accent);
+        stroke-width: 2.25;
+        stroke-linejoin: round;
+        stroke-linecap: round;
+      }
+      .axis { stroke: var(--graphite); stroke-width: 1; }
+      .floor { fill: none; stroke: var(--graphite); stroke-width: 1; opacity: 0.6; }
+      .bar { stroke-width: 3; stroke-linecap: round; }
+      .bar.m { stroke: var(--ink); }
+      .bar.s { stroke: var(--accent); }
+      .lbl { fill: var(--graphite); font-size: 12px; font-family: inherit; }
+      .lbl.s { fill: var(--accent); font-weight: 600; }
+
+
+      @media (prefers-reduced-motion: no-preference) {
+        .trace.draw {
+          stroke-dasharray: var(--len);
+          stroke-dashoffset: var(--len);
+          animation: draw 2.2s cubic-bezier(0.55, 0.1, 0.35, 1) 0.2s forwards;
+        }
+        .bar.draw {
+          stroke-dasharray: var(--len);
+          stroke-dashoffset: var(--len);
+          animation: draw 0.5s ease-out forwards;
+        }
+        .lbl.draw { opacity: 0; animation: show 0.4s ease-out forwards; }
+      }
+      @keyframes draw { to { stroke-dashoffset: 0; } }
+      @keyframes show { to { opacity: 1; } }
+
+      .links {
+        margin-top: clamp(1.5rem, 5vh, 3.5rem);
+        display: flex;
+        gap: 1.5rem;
+        font-size: 1.0625rem;
+      }
+      .links a {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: var(--ink);
+        text-decoration: underline;
+        text-decoration-color: var(--accent);
+        text-decoration-thickness: 2px;
+        text-underline-offset: 0.3em;
+        font-weight: 500;
+      }
+      .links a:hover { color: var(--accent); }
+      .links svg { fill: currentColor; }
+
+      a:focus-visible, button:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 3px;
+        border-radius: 2px;
+      }
+
+      footer {
+        color: var(--graphite);
+        font-size: 0.8125rem;
+        padding-top: 1.5rem;
+        padding-bottom: 1.5rem;
+      }
+
+     </style>
+  </head>
   <body>
-    <h1>Sergio</h1>
-    <p>Ingeniero Civil Mecánico de Profesión... Músico de Corazon</p>
+    <header class="wrap">
+      <a class="home" href="/">sergiourra.github.io</a>
+      <nav class="lang" aria-label="Idioma / Language">
+        <button type="button" data-lang="es" lang="es" aria-pressed="true">ES</button>
+        <button type="button" data-lang="en" lang="en" aria-pressed="false">EN</button>
+      </nav>
+    </header>
+
+    <main class="wrap">
+      <h1>Sergio</h1>
+
+      <div class="pair tagline">
+        <p class="line" data-i18n="a">Ingeniero mecánico de profesión,</p>
+        <p class="line" data-i18n="b">músico de corazón.</p>
+      </div>
+
+      <figure>
+        <div class="signal" aria-hidden="true">
+          <svg id="sig"></svg>
+        </div>
+      </figure>
+
+      <div class="links">
+        <a href="https://github.com/sergiourra" rel="me">
+          <svg width="18" height="18" viewBox="0 0 16 16" aria-hidden="true">
+            <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z" />
+          </svg>
+          GitHub
+        </a>
+      </div>
+    </main>
+
+    <footer class="wrap">© Sergio Cuevas</footer>
+
+    <script>
+      /* ---------- signal ---------- */
+      const drawSignal = (function () {
+        const NS = "http://www.w3.org/2000/svg";
+        const box = document.querySelector(".signal");
+        const svg = document.getElementById("sig");
+
+        // Machine: running speed and its orders, a bearing outer-race tone (BPFO), and noise.
+        const MACHINE = [
+          { f: 1, a: 1, label: "1×" },
+          { f: 2, a: 0.42, label: "2×" },
+          { f: 3, a: 0.18, label: "3×" },
+          { f: 3.58, a: 0.34, label: "BPFO", above: true },
+          { f: 7.16, a: 0.14 },
+        ];
+        const NOISE = [4.37, 5.11, 5.93, 6.71, 7.83, 2.61, 1.47].map((f, i) => ({ f, a: 0.05 + 0.02 * (i % 3), p: i * 1.7 }));
+
+        // Music: A major chord, open voicing (A3, E4, C#5 = 1, 3/2, 5/2), each note with its overtones.
+        const NOTES = [
+          { r: 1, w: 1, key: "nA" },
+          { r: 1.5, w: 0.8, key: "nE" },
+          { r: 2.5, w: 0.7, key: "nC" },
+        ];
+        const FMAX = 8.5;
+        const MUSIC = (() => {
+          const m = new Map();
+          NOTES.forEach((n) => {
+            for (let h = 1; h <= 6; h++) {
+              const f = n.r * h;
+              if (f > FMAX) break;
+              const k = f.toFixed(3);
+              const e = m.get(k) || { f, a: 0 };
+              e.a += n.w / Math.pow(h, 1.4);
+              if (h === 1) e.key = n.key;
+              m.set(k, e);
+            }
+          });
+          return [...m.values()];
+        })();
+
+        let first = true;
+
+        return function render() {
+          const W = box.clientWidth, H = box.clientHeight;
+          const lang = document.documentElement.lang;
+          svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+          svg.innerHTML = "";
+          const el = (tag, attrs, parent = svg) => {
+            const n = document.createElementNS(NS, tag);
+            for (const k in attrs) n.setAttribute(k, attrs[k]);
+            parent.appendChild(n);
+            return n;
+          };
+
+          const pad = Math.max(16, W * 0.03);
+          const half = W / 2;
+
+          // ---- time domain ----
+          const MID = H * 0.27, AMP = H * 0.2;
+          const P = Math.max(70, Math.min(150, W * 0.09)); // period of 1× in px
+          const w0 = (2 * Math.PI) / P;
+          const machine = (x) =>
+            MACHINE.reduce((s, c) => s + c.a * Math.sin(w0 * c.f * x + c.f), 0) +
+            NOISE.reduce((s, c) => s + c.a * Math.sin(w0 * c.f * 1.9 * x + c.p), 0);
+          const music = (x) => MUSIC.reduce((s, c) => s + c.a * Math.sin(w0 * 0.8 * c.f * x), 0);
+          const norm = (fn) => { let m = 0; for (let x = 0; x < W; x += 2) m = Math.max(m, Math.abs(fn(x))); return m || 1; };
+          const nm = norm(machine), ns = norm(music);
+          const sm = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
+
+          const defs = el("defs", {});
+          const g = el("linearGradient", { id: "ink-to-accent", gradientUnits: "userSpaceOnUse", x1: half - W * 0.08, x2: half + W * 0.08, y1: 0, y2: 0 }, defs);
+          el("stop", { offset: 0, style: "stop-color:var(--ink)" }, g);
+          el("stop", { offset: 1, style: "stop-color:var(--accent)" }, g);
+
+          let d = "";
+          for (let x = 0; x <= W; x += 1.5) {
+            const t = sm(half - W * 0.08, half + W * 0.08, x);
+            const v = (1 - t) * (machine(x) / nm) + t * (music(x) / ns);
+            d += (x ? "L" : "M") + x.toFixed(1) + " " + (MID - v * AMP).toFixed(1);
+          }
+          const trace = el("path", { d, class: "trace" });
+
+          // ---- frequency domain: same log axis on both sides ----
+          const BASE = H - 26, TALL = H * 0.32;
+          const lx = (f, x0) => x0 + (Math.log2(f / 0.85) / Math.log2(FMAX / 0.85)) * (half - pad * 1.5);
+          el("line", { x1: pad, x2: half - pad / 2, y1: BASE, y2: BASE, class: "axis" });
+          el("line", { x1: half + pad / 2, x2: W - pad, y1: BASE, y2: BASE, class: "axis" });
+
+          // machine noise floor
+          let fl = "";
+          for (let x = pad; x <= half - pad / 2; x += 3) {
+            const n = 3 + 2.5 * Math.abs(Math.sin(x * 0.7) * Math.sin(x * 0.23));
+            fl += (fl ? "L" : "M") + x + " " + (BASE - n).toFixed(1);
+          }
+          el("path", { d: fl, class: "floor" });
+
+          const labels = { es: { nA: "La", nE: "Mi", nC: "Do♯" }, en: { nA: "A", nE: "E", nC: "C♯" } }[lang] || {};
+          const bars = [];
+          const plot = (list, x0, cls) => {
+            const max = Math.max(...list.map((c) => c.a));
+            list.forEach((c) => {
+              const x = lx(c.f, x0), h = (c.a / max) * TALL;
+              const bar = el("line", { x1: x, x2: x, y1: BASE, y2: BASE - h, class: "bar " + cls });
+              bar.style.setProperty("--len", h);
+              const text = c.label || labels[c.key];
+              let t = null;
+              if (text) {
+                t = el("text", { x, y: c.above ? BASE - h - 8 : BASE + 17, "text-anchor": "middle", class: "lbl " + cls });
+                t.textContent = text;
+              }
+              bars.push([bar, t, x]);
+            });
+          };
+          plot(MACHINE, pad, "m");
+          plot(MUSIC, half + pad / 2, "s");
+
+          if (first) {
+            trace.style.setProperty("--len", trace.getTotalLength());
+            trace.classList.add("draw");
+            bars.forEach(([b, t, x]) => {
+              const delay = 1.6 + (x / W) * 0.9 + "s";
+              b.classList.add("draw"); b.style.animationDelay = delay;
+              if (t) { t.classList.add("draw"); t.style.animationDelay = delay; }
+            });
+          }
+          first = false;
+        };
+      })();
+
+      drawSignal();
+      {
+        let raf;
+        new ResizeObserver(() => { cancelAnimationFrame(raf); raf = requestAnimationFrame(drawSignal); }).observe(document.querySelector(".signal"));
+      }
+
+      /* ---------- language ---------- */
+      const STR = {
+        es: {
+          a: "Ingeniero mecánico de profesión,",
+          b: "músico de corazón.",
+        },
+        en: {
+          a: "Mechanical engineer by profession,",
+          b: "musician at heart.",
+        },
+      };
+      const buttons = document.querySelectorAll(".lang button");
+      function setLang(lang) {
+        document.documentElement.lang = lang;
+        document.querySelectorAll("[data-i18n]").forEach((el) => (el.textContent = STR[lang][el.dataset.i18n]));
+        buttons.forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.lang === lang)));
+        try { localStorage.setItem("lang", lang); } catch {}
+        drawSignal();
+      }
+      buttons.forEach((b) => b.addEventListener("click", () => setLang(b.dataset.lang)));
+      let saved = null;
+      try { saved = localStorage.getItem("lang"); } catch {}
+      if (saved === "en") setLang("en");
+    </script>
   </body>
 </html>
